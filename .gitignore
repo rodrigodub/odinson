@@ -1,2 +1,4 @@
 
 .ipynb_checkpoints/odinson dev 20211114-checkpoint.ipynb
+*.pyc
+.ipynb_checkpoints/odinson-checkpoint.py
