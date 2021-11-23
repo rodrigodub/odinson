@@ -3,10 +3,10 @@
 # Scrape Guia dos Quadrinhos webpages to collect original Marvel editions
 # from old magazines published in Brazil
 # Author: Rodrigo Nobrega
-# 20211114 20211121
+# 20211114 20211122
 #########################################################################################
 __title__ = "Odinson"
-__version__ = 0.08
+__version__ = 0.09
 
 
 # import libraries
@@ -29,6 +29,8 @@ class Odinson(object):
         self.pagesoup = None
         self.editionslist = []
         self.editionnumber = []
+        self.editioncontents = None
+        self.editionstorylist = []
     
     def seteditionurl(self):
         """Take the edition part of the whole URL"""
@@ -55,6 +57,7 @@ class Odinson(object):
     
     def geteditionnumber(self):
         """Takes the edition title and number"""
+        print(" -------------------------------------------")
         ed = self.pagesoup.find(id="nome_titulo_lb")
         edl = ed.contents
         edl = [f"{i}".strip() for i in edl]
@@ -62,10 +65,36 @@ class Odinson(object):
         edl = [i.split("<")[0] if "<" in i else i for i in edl]
         edl = [i.replace("n°", "").strip() for i in edl if i != '']
         singleed = [edl[0], edl[-1]]
-        return singleed      
+        print(f"  {singleed[0]} #{singleed[1]}")
+        print(" -------------------------------------------")
+        return singleed
     
+    def geteditioncontents(self):
+        """Retrieve the text contents of the edition"""
+        results = self.pagesoup.find(id="texto_pag_detalhe")
+        results = results.text
+        return results
+
+
+# Controller function
+def odinsoncontrol(firsteditionurl):
+    """Function to drive the workflow"""
+    # 1. Take the first edition and set the edition custom URL
+    # 2. Get the edition's Soup
+    # 3. Set the list of ALL editions URLs to iterate
+    # 4. For each EDITION
+    #  4.1. Get the edition title & number
+    #  4.2. Get the edition whole text contents
+    #  4.3. Get the edition's stories list
+    # 5. For each STORY
+    #  5.1. Get the story details for each story
+    #  5.2. Retrieve main character
+    #  5.3. Retrieve original title
+    #  5.4. Retrieve original number
+    #  5.5. Retrieve original year
+    # 6. Save record to CSV
+    pass
     
-        
 
 # main loop
 def main():
@@ -100,7 +129,6 @@ def test():
 #     [print(i) for i in od.editionslist]
     # Define Edition name and number
     od.editionnumber = od.geteditionnumber()
-    print(f" Edition Number: {od.editionnumber}")
     #
     # footer --------------------------------------------------------------
     print(f'\n{34 * "="}  OK  {35 * "="}\n')
