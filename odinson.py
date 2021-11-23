@@ -3,10 +3,10 @@
 # Scrape Guia dos Quadrinhos webpages to collect original Marvel editions
 # from old magazines published in Brazil
 # Author: Rodrigo Nobrega
-# 20211114 20211122
+# 20211114 / 20211123
 #########################################################################################
 __title__ = "Odinson"
-__version__ = 0.09
+__version__ = "0.10"
 
 
 # import libraries
@@ -25,17 +25,18 @@ class Odinson(object):
     """
     def __init__(self, initialurl):
         self.initialurl = initialurl
-        self.editionurl = ""
-        self.pagesoup = None
-        self.editionslist = []
-        self.editionnumber = []
-        self.editioncontents = None
-        self.editionstorylist = []
+        self.editionurl = self.seteditionurl()
+        self.pagesoup = self.getsoup()
+        self.editionslist = self.seteditionslist()
+        self.editionnumber = self.geteditionnumber()
+        self.editioncontents = self.geteditioncontents()
+        self.editionstorylist = self.getallstories()
+        self.allstories = []
     
     def seteditionurl(self):
         """Take the edition part of the whole URL"""
-        print(" Defining Edition URL")
         edu = self.initialurl.replace(URLROOT, "")
+        print(" Obtained Edition URL")
         return edu
     
     def getsoup(self):
@@ -74,16 +75,34 @@ class Odinson(object):
         results = self.pagesoup.find(id="texto_pag_detalhe")
         results = results.text
         return results
+    
+    def getallstories(self):
+        """Return a list of all stories of an edition"""
+        # page section
+        results = self.pagesoup.find(id="texto_pag_detalhe")
+        # individual stories
+        stories = results.find_all("div", class_="historia")
+        stories = [i.text for i in stories]
+        return stories
 
 
 # Controller function
 def odinsoncontrol(firsteditionurl):
     """Function to drive the workflow"""
     # 1. Take the first edition and set the edition custom URL
+    od = Odinson(firsteditionurl)
+    od.editionurl = od.seteditionurl()
     # 2. Get the edition's Soup
+    od.pagesoup = od.getsoup()
     # 3. Set the list of ALL editions URLs to iterate
+    alleditionslist = od.seteditionslist()
+    alleditionslist.insert(0, od.editionurl)
     # 4. For each EDITION
-    #  4.1. Get the edition title & number
+    for edurl in alleditionslist:
+        editionodinson = Odinson(f"{URLROOT}{edurl}")
+        editionodinson.pagesoup = editionodinson.getsoup()
+        #  4.1. Get the edition title & number
+        editiontitlenumber = 
     #  4.2. Get the edition whole text contents
     #  4.3. Get the edition's stories list
     # 5. For each STORY
@@ -120,15 +139,15 @@ def test():
     od = Odinson("http://www.guiadosquadrinhos.com/edicao/herois-da-tv-2-serie-n-1/htv0302/6274")
     # Set Edition URL
     od.editionurl = od.seteditionurl()
-#     print(f" Edition URL: {od.editionurl}")
+#     print(f" DEBUG: Edition URL: {od.editionurl}")
     # Get page soup
-    od.pagesoup = od.getsoup()
+#     od.pagesoup = od.getsoup()
 #     print(od.pagesoup)
     # Define all Editions list
-    od.editionslist = od.seteditionslist()
+#     od.editionslist = od.seteditionslist()
 #     [print(i) for i in od.editionslist]
     # Define Edition name and number
-    od.editionnumber = od.geteditionnumber()
+#     od.editionnumber = od.geteditionnumber()
     #
     # footer --------------------------------------------------------------
     print(f'\n{34 * "="}  OK  {35 * "="}\n')
