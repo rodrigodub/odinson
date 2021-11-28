@@ -6,7 +6,7 @@
 # 20211114 / 20211128
 #########################################################################################
 __title__ = "Odinson"
-__version__ = "0.14"
+__version__ = "0.15"
 
 
 # import libraries
@@ -41,7 +41,7 @@ class Odinson(object):
         self.originalyear = self.getoriginalyear()
         self.writer = self.getwriter()
         self.artist = self.getartirst()
-        self.summary = self.getsummary()
+#         self.summary = self.getsummary()
         self.editiondf = self.setdataframe()
             
     def seteditionurl(self):
@@ -54,7 +54,7 @@ class Odinson(object):
         """Retrieve the Beautiful Soup version of a page"""
         URL = URLROOT + self.editionurl
         print(f" {45 * '='}")
-        print(" Retrieving page contents")
+        print(f" Retrieving page contents for\n {URL}")
         page = requests.get(URL)
         thesoup = BeautifulSoup(page.content, "html.parser")
         return thesoup
@@ -174,18 +174,22 @@ class Odinson(object):
                        i+1, self.storytitles[i], self.maincharacter[i], 
                        self.allcharacters[i], self.originaltitle[i], 
                        self.originalnumber[i], self.originalyear[i], 
-                       self.writer[i], self.artist[i], self.summary[i]])
+                       self.writer[i], self.artist[i] #, self.summary[i]
+                      ])
         editiondf = pd.DataFrame(li, 
                                  columns=["BRTITLE", "BRNUM", "STORYNUM", 
                                           "BRSTORY", "MAINCHAR", "ALLCHAR",
                                           "ORIGTITLE", "ORIGNUM", "ORIGYEAR", 
-                                          "WRITER", "ARTIST", "SUMMARY"])
+                                          "WRITER", "ARTIST" #, "SUMMARY"
+                                         ])
+        print(" OK")
         return editiondf
 
     
 # Controller function
 def odinsoncontrol(firsteditionurl):
     """Function to drive the workflow"""
+    print(" Starting program")
     # 1. create an empty dataframe
     outputdf = pd.DataFrame()
     # 2. take the first edition URL and create a list of editions
@@ -197,7 +201,9 @@ def odinsoncontrol(firsteditionurl):
         #  4. create edition dataframe
         outputdf = pd.concat([outputdf, editionodinson.editiondf], ignore_index=True)
     # 5. save CSV
-    outputdf.to_csv(f"Comics_{datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M')}.csv") as fdf:
+    print(" Saving CSV")
+    outputdf.to_csv(f"Comics_{datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M')}.csv")
+    print(" Done")
     return
     
 
@@ -208,7 +214,7 @@ def main():
     print(f'{f"{__title__} v.{__version__}":^75}')
     print(f'{75 * "="}\n')
     # ---------------------------------------------------------------------
-    # main code goes here
+    oc = odinsoncontrol("http://www.guiadosquadrinhos.com/edicao/herois-da-tv-2-serie-n-1/htv0302/6274")
     #
     # footer --------------------------------------------------------------
     print(f'\n{34 * "="}  OK  {35 * "="}\n')
