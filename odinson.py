@@ -3,15 +3,17 @@
 # Scrape Guia dos Quadrinhos webpages to collect original Marvel editions
 # from old magazines published in Brazil
 # Author: Rodrigo Nobrega
-# 20211114 / 20211127
+# 20211114 / 20211128
 #########################################################################################
 __title__ = "Odinson"
-__version__ = "0.12"
+__version__ = "0.14"
 
 
 # import libraries
 import requests
+import datetime
 from bs4 import BeautifulSoup
+import pandas as pd
 
 
 # global variables
@@ -33,8 +35,14 @@ class Odinson(object):
         self.storytitles = self.getallstories()
         self.storydetails = self.getstorydetails()
         self.maincharacter = self.getmaincharacter()
+        self.allcharacters = self.getallcharacters()
         self.originaltitle = self.getoriginaltitle()
         self.originalnumber = self.getoriginalnumber()
+        self.originalyear = self.getoriginalyear()
+        self.writer = self.getwriter()
+        self.artist = self.getartirst()
+        self.summary = self.getsummary()
+        self.editiondf = self.setdataframe()
             
     def seteditionurl(self):
         """Take the edition part of the whole URL"""
@@ -62,7 +70,7 @@ class Odinson(object):
     
     def geteditionnumber(self):
         """Takes the edition title and number"""
-        print(f" {45 * '.'}")
+        print(f" {45 * '-'}")
         ed = self.pagesoup.find(id="nome_titulo_lb")
         edl = ed.contents
         edl = [f"{i}".strip() for i in edl]
@@ -71,7 +79,7 @@ class Odinson(object):
         edl = [i.replace("n°", "").strip() for i in edl if i != '']
         singleed = [edl[0], edl[-1]]
         print(f"  {singleed[0]} #{singleed[1]}")
-        print(f" {45 * '.'}")
+        print(f" {45 * '-'}")
         return singleed
     
     def geteditioncontents(self):
@@ -109,6 +117,13 @@ class Odinson(object):
             chardict[i] = self.storydetails[i].split(",")[0].split("Personagens:")[1].strip()
         return chardict
     
+    def getallcharacters(self):
+        """Return all characters the stories """
+        allchardict = {}
+        for i in self.storydetails.keys():
+            allchardict[i] = self.storydetails[i].split("Personagens:")[1].split("\nRoteiro:")[0].strip().replace("  ", " ").replace(",", "")
+        return allchardict
+    
     def getoriginaltitle(self):
         """Return the stories original title"""
         titledict = {}
@@ -123,32 +138,67 @@ class Odinson(object):
             numdict[i] = self.storydetails[i].split("Publicada originalmente em")[1].split(")")[1].replace("n°\xa0", "").split("/")[0].strip()
         return numdict
     
+    def getoriginalyear(self):
+        """Return the stories original year"""
+        yrdict = {}
+        for i in self.storydetails.keys():
+            yrdict[i] = self.storydetails[i].split("n°")[1].split("/")[1].split(" - ")[0]
+        return yrdict
+    
+    def getwriter(self):
+        """Return the stories writers"""
+        wrtdict = {}
+        for i in self.storydetails.keys():
+            wrtdict[i] = self.storydetails[i].split("Roteiro:")[1].split("Desenho:")[0].strip()
+        return wrtdict
+    
+    def getartirst(self):
+        """Return the stories artists"""
+        artdict = {}
+        for i in self.storydetails.keys():
+            artdict[i] = self.storydetails[i].split("Desenho:")[1].split("Arte-Final:")[0].strip()
+        return artdict
+    
+    def getsummary(self):
+        """Return the stories artists"""
+        sumdict = {}
+        for i in self.storydetails.keys():
+            sumdict[i] = self.storydetails[i].split('".')[1].split("\r\n")[0].strip()
+        return sumdict
+    
     def setdataframe(self):
-        pass
+        print(" Creating edition dataframe")
+        li = []
+        for i in self.storytitles.keys():
+            li.append([self.editionnumber[0], self.editionnumber[1], 
+                       i+1, self.storytitles[i], self.maincharacter[i], 
+                       self.allcharacters[i], self.originaltitle[i], 
+                       self.originalnumber[i], self.originalyear[i], 
+                       self.writer[i], self.artist[i], self.summary[i]])
+        editiondf = pd.DataFrame(li, 
+                                 columns=["BRTITLE", "BRNUM", "STORYNUM", 
+                                          "BRSTORY", "MAINCHAR", "ALLCHAR",
+                                          "ORIGTITLE", "ORIGNUM", "ORIGYEAR", 
+                                          "WRITER", "ARTIST", "SUMMARY"])
+        return editiondf
 
     
 # Controller function
 def odinsoncontrol(firsteditionurl):
     """Function to drive the workflow"""
-    # 1. take the first edition URL and create a list of editions
+    # 1. create an empty dataframe
+    outputdf = pd.DataFrame()
+    # 2. take the first edition URL and create a list of editions
     alleditionslist = Odinson(firsteditionurl).seteditionslist()
     alleditionslist.insert(0, firsteditionurl.replace(URLROOT, ""))
-    # 2. For each EDITION
+    # 3. For each EDITION
     for edurl in alleditionslist:
         editionodinson = Odinson(f"{URLROOT}{edurl}")
-        editionodinson.pagesoup = editionodinson.getsoup()
-        #  4.1. Get the edition title & number
-#         editiontitlenumber = 
-    #  4.2. Get the edition whole text contents
-    #  4.3. Get the edition's stories list
-    # 5. For each STORY
-    #  5.1. Get the story details for each story
-    #  5.2. Retrieve main character
-    #  5.3. Retrieve original title
-    #  5.4. Retrieve original number
-    #  5.5. Retrieve original year
-    # 6. Save record to CSV
-    return alleditionslist
+        #  4. create edition dataframe
+        outputdf = pd.concat([outputdf, editionodinson.editiondf], ignore_index=True)
+    # 5. save CSV
+    outputdf.to_csv(f"Comics_{datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M')}.csv") as fdf:
+    return
     
 
 # main loop
@@ -194,5 +244,5 @@ def test():
 
 # main, calling main loop
 if __name__ == '__main__':
-#     main()
-    test()
+    main()
+#     test()
