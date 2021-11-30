@@ -6,7 +6,7 @@
 # 20211114 / 20211128
 #########################################################################################
 __title__ = "Odinson"
-__version__ = "0.15"
+__version__ = "0.16"
 
 
 # import libraries
@@ -41,7 +41,7 @@ class Odinson(object):
         self.originalyear = self.getoriginalyear()
         self.writer = self.getwriter()
         self.artist = self.getartirst()
-#         self.summary = self.getsummary()
+        self.summary = self.getsummary()
         self.editiondf = self.setdataframe()
             
     def seteditionurl(self):
@@ -114,7 +114,10 @@ class Odinson(object):
         """Return the stories main character"""
         chardict = {}
         for i in self.storydetails.keys():
-            chardict[i] = self.storydetails[i].split(",")[0].split("Personagens:")[1].strip()
+            try:
+                chardict[i] = self.storydetails[i].split(",")[0].split("Personagens:")[1].strip()
+            except:
+                chardict[i] = "NA"
         return chardict
     
     def getallcharacters(self):
@@ -149,21 +152,30 @@ class Odinson(object):
         """Return the stories writers"""
         wrtdict = {}
         for i in self.storydetails.keys():
-            wrtdict[i] = self.storydetails[i].split("Roteiro:")[1].split("Desenho:")[0].strip()
+            try:
+                wrtdict[i] = self.storydetails[i].split("Roteiro:")[1].split("Desenho:")[0].strip()
+            except:
+                wrtdict[i] = "NA"
         return wrtdict
     
     def getartirst(self):
         """Return the stories artists"""
         artdict = {}
         for i in self.storydetails.keys():
-            artdict[i] = self.storydetails[i].split("Desenho:")[1].split("Arte-Final:")[0].strip()
+            try:
+                artdict[i] = self.storydetails[i].split("Desenho:")[1].split("Arte-Final:")[0].strip()
+            except:
+                artdict[i] = "NA"
         return artdict
     
     def getsummary(self):
         """Return the stories artists"""
         sumdict = {}
         for i in self.storydetails.keys():
-            sumdict[i] = self.storydetails[i].split('".')[1].split("\r\n")[0].strip()
+            try:
+                sumdict[i] = self.storydetails[i].split('".')[1].split("\r\n")[0].strip()
+            except:
+                sumdict[i] = "NA"
         return sumdict
     
     def setdataframe(self):
@@ -174,13 +186,13 @@ class Odinson(object):
                        i+1, self.storytitles[i], self.maincharacter[i], 
                        self.allcharacters[i], self.originaltitle[i], 
                        self.originalnumber[i], self.originalyear[i], 
-                       self.writer[i], self.artist[i] #, self.summary[i]
+                       self.writer[i], self.artist[i], self.summary[i]
                       ])
         editiondf = pd.DataFrame(li, 
                                  columns=["BRTITLE", "BRNUM", "STORYNUM", 
                                           "BRSTORY", "MAINCHAR", "ALLCHAR",
                                           "ORIGTITLE", "ORIGNUM", "ORIGYEAR", 
-                                          "WRITER", "ARTIST" #, "SUMMARY"
+                                          "WRITER", "ARTIST", "SUMMARY"
                                          ])
         print(" OK")
         return editiondf
