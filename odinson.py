@@ -3,10 +3,10 @@
 # Scrape Guia dos Quadrinhos webpages to collect original Marvel editions
 # from old magazines published in Brazil
 # Author: Rodrigo Nobrega
-# 20211114 / 20211128
+# 20211114 / 20211218
 #########################################################################################
 __title__ = "Odinson"
-__version__ = "0.16"
+__version__ = "0.18"
 
 
 # import libraries
@@ -124,28 +124,40 @@ class Odinson(object):
         """Return all characters the stories """
         allchardict = {}
         for i in self.storydetails.keys():
-            allchardict[i] = self.storydetails[i].split("Personagens:")[1].split("\nRoteiro:")[0].strip().replace("  ", " ").replace(",", "")
+            try:
+                allchardict[i] = self.storydetails[i].split("Personagens:")[1].split("\nRoteiro:")[0].strip().replace("  ", " ").replace(",", "")
+            except:
+                allchardict[i] = "NA"
         return allchardict
     
     def getoriginaltitle(self):
         """Return the stories original title"""
         titledict = {}
         for i in self.storydetails.keys():
-            titledict[i] = self.storydetails[i].split("Publicada originalmente em")[1].split("(")[0].strip()
+            try:
+                titledict[i] = self.storydetails[i].split("Publicada originalmente em")[1].split("(")[0].strip()
+            except:
+                titledict[i] = "NA"
         return titledict
     
     def getoriginalnumber(self):
         """Return the stories original number"""
         numdict = {}
         for i in self.storydetails.keys():
-            numdict[i] = self.storydetails[i].split("Publicada originalmente em")[1].split(")")[1].replace("n°\xa0", "").split("/")[0].strip()
+            try:
+                numdict[i] = self.storydetails[i].split("Publicada originalmente em")[1].split(")")[1].replace("n°\xa0", "").split("/")[0].strip()
+            except:
+                numdict[i] = "NA"
         return numdict
     
     def getoriginalyear(self):
         """Return the stories original year"""
         yrdict = {}
         for i in self.storydetails.keys():
-            yrdict[i] = self.storydetails[i].split("n°")[1].split("/")[1].split(" - ")[0]
+            try:
+                yrdict[i] = self.storydetails[i].split("n°")[1].split("/")[1].split(" - ")[0]
+            except:
+                yrdict[i] = "NA"
         return yrdict
     
     def getwriter(self):
@@ -197,7 +209,7 @@ class Odinson(object):
         print(" OK")
         return editiondf
 
-    
+
 # Controller function
 def odinsoncontrol(firsteditionurl):
     """Function to drive the workflow"""
@@ -226,7 +238,8 @@ def main():
     print(f'{f"{__title__} v.{__version__}":^75}')
     print(f'{75 * "="}\n')
     # ---------------------------------------------------------------------
-    oc = odinsoncontrol("http://www.guiadosquadrinhos.com/edicao/herois-da-tv-2-serie-n-1/htv0302/6274")
+#     oc = odinsoncontrol("http://www.guiadosquadrinhos.com/edicao/herois-da-tv-2-serie-n-1/htv0302/6274")
+    oc = odinsoncontrol("http://www.guiadosquadrinhos.com/edicao/superaventuras-marvel-n-1/sam0301/7927")
     #
     # footer --------------------------------------------------------------
     print(f'\n{34 * "="}  OK  {35 * "="}\n')
